@@ -62,7 +62,7 @@ object BolsoLeveNotificationHelper {
         )
 
         val notification = NotificationCompat.Builder(context, CHANNEL_MEDICATION_ID)
-            .setSmallIcon(R.drawable.ic_launcher_foreground)
+            .setSmallIcon(R.drawable.ic_notification)
             .setContentTitle("Hoje é dia de dose! 💉")
             .setContentText("Não se esqueça de aplicar $medicationName ($doseMg mg) e confirmar no app.")
             .setStyle(NotificationCompat.BigTextStyle().bigText("Mantenha a regularidade semanal da sua dose de $medicationName ($doseMg mg) para garantir a máxima eficácia do tratamento."))
@@ -90,7 +90,7 @@ object BolsoLeveNotificationHelper {
         )
 
         val notification = NotificationCompat.Builder(context, CHANNEL_WEIGH_IN_ID)
-            .setSmallIcon(R.drawable.ic_launcher_foreground)
+            .setSmallIcon(R.drawable.ic_notification)
             .setContentTitle("Hora da pesagem semanal! ⚖️")
             .setContentText("Pese-se pela manhã, em jejum e após ir ao banheiro.")
             .setStyle(NotificationCompat.BigTextStyle().bigText("Dica Bolso+Leve: Para dados mais precisos, pese-se pela manhã, em jejum, descalço e com roupas leves."))

@@ -1,8 +1,19 @@
-# ⚖️ Bolso+Leve
+<p align="center">
+  <img src="docs/logo.png" alt="Bolso+Leve Logo" width="160" />
+</p>
 
-**Bolso+Leve** é um aplicativo Android nativo moderno e completo para acompanhamento de tratamento de perda de peso e controle de medicação semanal (como Mounjaro, Ozempic, Wegovy, entre outros).
+<h1 align="center">Bolso+Leve</h1>
 
-O app une o acompanhamento clínico, evolução da curva de peso, gestão de doses e controle financeiro de investimento em um só lugar, com visual moderno em Material Design 3 e Material You.
+<p align="center">
+  <strong>Aplicativo nativo para acompanhamento de tratamento de perda de peso, controle semanal de medicação e gestão financeira.</strong>
+</p>
+
+<p align="center">
+  <img src="https://img.shields.io/badge/Plataforma-Android-3DDC84?logo=android&logoColor=white" alt="Android" />
+  <img src="https://img.shields.io/badge/Kotlin-2.0-7F52FF?logo=kotlin&logoColor=white" alt="Kotlin" />
+  <img src="https://img.shields.io/badge/Jetpack-Compose-4285F4?logo=jetpackcompose&logoColor=white" alt="Compose" />
+  <img src="https://img.shields.io/badge/Material-Design%203-006C4C" alt="Material 3" />
+</p>
 
 ---
 

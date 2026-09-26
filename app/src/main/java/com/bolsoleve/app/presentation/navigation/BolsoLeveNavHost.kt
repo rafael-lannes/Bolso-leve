@@ -183,20 +183,13 @@ private fun SplashScreen(
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.Center
         ) {
-            Box(
+            androidx.compose.foundation.Image(
+                painter = androidx.compose.ui.res.painterResource(id = com.bolsoleve.app.R.drawable.app_logo),
+                contentDescription = "Bolso+Leve Logo",
                 modifier = Modifier
-                    .size(68.dp)
-                    .clip(CircleShape)
-                    .background(MaterialTheme.colorScheme.primaryContainer),
-                contentAlignment = Alignment.Center
-            ) {
-                Icon(
-                    imageVector = Icons.Default.Scale,
-                    contentDescription = null,
-                    tint = MaterialTheme.colorScheme.primary,
-                    modifier = Modifier.size(36.dp)
-                )
-            }
+                    .size(96.dp)
+                    .clip(androidx.compose.foundation.shape.RoundedCornerShape(22.dp))
+            )
             Spacer(modifier = Modifier.height(16.dp))
             Text(
                 text = "Bolso+Leve",
