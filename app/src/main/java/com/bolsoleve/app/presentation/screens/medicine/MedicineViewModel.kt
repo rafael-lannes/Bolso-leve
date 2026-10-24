@@ -1,7 +1,9 @@
 package com.bolsoleve.app.presentation.screens.medicine
 
+import android.content.Context
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.bolsoleve.app.core.utils.DateTimeUtils
 import com.bolsoleve.app.data.local.datastore.UserPreferencesRepository
 import com.bolsoleve.app.domain.model.DoctorProfile
 import com.bolsoleve.app.domain.model.ExpenseCategory
@@ -12,6 +14,7 @@ import com.bolsoleve.app.domain.repository.DoctorRepository
 import com.bolsoleve.app.domain.repository.ExpenseRepository
 import com.bolsoleve.app.domain.repository.MedicationRepository
 import com.bolsoleve.app.domain.usecase.AddMedicationBoxUseCase
+import com.bolsoleve.app.notification.ReminderScheduler
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -32,6 +35,7 @@ data class MedicineUiState(
 )
 
 class MedicineViewModel(
+    private val context: Context,
     private val preferencesRepository: UserPreferencesRepository,
     private val medicationRepository: MedicationRepository,
     private val doctorRepository: DoctorRepository,
@@ -71,7 +75,10 @@ class MedicineViewModel(
     fun updateMedicationSettings(name: String, dose: Double, dayOfWeek: Int) {
         viewModelScope.launch {
             preferencesRepository.updateMedicationSettings(name, dose, dayOfWeek)
-            _uiState.update { it.copy(feedbackMessage = "Configurações de medicação atualizadas!") }
+            ReminderScheduler.scheduleWeeklyReminder(context)
+            ReminderScheduler.checkAndTriggerPendingNotification(context)
+            val dayName = DateTimeUtils.getDayName(dayOfWeek)
+            _uiState.update { it.copy(feedbackMessage = "Configurações salvas! Aplicação semanal agendada para toda $dayName.") }
         }
     }
 

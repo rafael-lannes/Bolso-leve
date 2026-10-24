@@ -238,12 +238,16 @@ fun NextApplicationCard(
     onConfirmTodayApplication: () -> Unit,
     modifier: Modifier = Modifier
 ) {
+    val isDosePendingToday = summary.isDoseToday && !summary.isTodayDoseConfirmed
+
     ElevatedCard(
         modifier = modifier.fillMaxWidth(),
         shape = RoundedCornerShape(20.dp),
         colors = CardDefaults.elevatedCardColors(
-            containerColor = if (summary.isDoseToday)
+            containerColor = if (isDosePendingToday)
                 MaterialTheme.colorScheme.primaryContainer
+            else if (summary.isTodayDoseConfirmed)
+                MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.45f)
             else
                 MaterialTheme.colorScheme.surface
         ),
@@ -267,7 +271,7 @@ fun NextApplicationCard(
                             .size(38.dp)
                             .clip(CircleShape)
                             .background(
-                                if (summary.isDoseToday) MaterialTheme.colorScheme.primary
+                                if (isDosePendingToday) MaterialTheme.colorScheme.primary
                                 else MaterialTheme.colorScheme.secondaryContainer
                             ),
                         contentAlignment = Alignment.Center
@@ -275,7 +279,7 @@ fun NextApplicationCard(
                         Icon(
                             imageVector = Icons.Default.Medication,
                             contentDescription = null,
-                            tint = if (summary.isDoseToday) MaterialTheme.colorScheme.onPrimary
+                            tint = if (isDosePendingToday) MaterialTheme.colorScheme.onPrimary
                             else MaterialTheme.colorScheme.onSecondaryContainer
                         )
                     }
@@ -296,21 +300,60 @@ fun NextApplicationCard(
                 // Tag de contagem regressiva
                 Surface(
                     shape = RoundedCornerShape(10.dp),
-                    color = if (summary.isDoseToday) MaterialTheme.colorScheme.primary
-                    else MaterialTheme.colorScheme.tertiaryContainer
+                    color = when {
+                        summary.isTodayDoseConfirmed -> SuccessGreen.copy(alpha = 0.15f)
+                        isDosePendingToday -> MaterialTheme.colorScheme.primary
+                        else -> MaterialTheme.colorScheme.tertiaryContainer
+                    }
                 ) {
                     Text(
                         text = when {
                             summary.isTodayDoseConfirmed -> "Aplicada hoje ✓"
-                            summary.isDoseToday -> "É HOJE!"
+                            isDosePendingToday -> "É HOJE! 💉"
                             summary.daysUntilNextDose == 1 -> "Amanhã"
                             else -> "Faltam ${summary.daysUntilNextDose} dias"
                         },
                         style = MaterialTheme.typography.labelMedium,
                         fontWeight = FontWeight.Bold,
-                        color = if (summary.isDoseToday) MaterialTheme.colorScheme.onPrimary
-                        else MaterialTheme.colorScheme.onTertiaryContainer,
+                        color = when {
+                            summary.isTodayDoseConfirmed -> SuccessGreen
+                            isDosePendingToday -> MaterialTheme.colorScheme.onPrimary
+                            else -> MaterialTheme.colorScheme.onTertiaryContainer
+                        },
                         modifier = Modifier.padding(horizontal = 10.dp, vertical = 5.dp)
+                    )
+                }
+            }
+
+            // Detalhes da rotina semanal de aplicação
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .background(
+                        color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.35f),
+                        shape = RoundedCornerShape(12.dp)
+                    )
+                    .padding(horizontal = 12.dp, vertical = 8.dp),
+                verticalArrangement = Arrangement.spacedBy(3.dp)
+            ) {
+                if (summary.applicationDayName.isNotBlank()) {
+                    Text(
+                        text = "🗓️ Rotina semanal: Toda ${summary.applicationDayName}",
+                        style = MaterialTheme.typography.bodySmall,
+                        fontWeight = FontWeight.SemiBold,
+                        color = MaterialTheme.colorScheme.onSurface
+                    )
+                }
+                if (summary.nextDoseFormattedDate.isNotBlank()) {
+                    Text(
+                        text = if (summary.isTodayDoseConfirmed)
+                            "Próxima dose programada: ${summary.nextDoseFormattedDate}"
+                        else if (summary.isDoseToday)
+                            "Data da dose de hoje: ${summary.nextDoseFormattedDate}"
+                        else
+                            "Próxima dose: ${summary.nextDoseFormattedDate}",
+                        style = MaterialTheme.typography.labelSmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
                 }
             }

@@ -29,7 +29,8 @@ data class UserPreferences(
     val currentDoseMg: Double = 2.5,
     val reminderEnabled: Boolean = true,
     val reminderHour: Int = 9,
-    val reminderMinute: Int = 0
+    val reminderMinute: Int = 0,
+    val lastNotificationDate: String = ""
 )
 
 class UserPreferencesRepository(private val context: Context) {
@@ -46,6 +47,7 @@ class UserPreferencesRepository(private val context: Context) {
         val REMINDER_ENABLED = booleanPreferencesKey("reminder_enabled")
         val REMINDER_HOUR = intPreferencesKey("reminder_hour")
         val REMINDER_MINUTE = intPreferencesKey("reminder_minute")
+        val LAST_NOTIFICATION_DATE = stringPreferencesKey("last_notification_date")
     }
 
     val userPreferencesFlow: Flow<UserPreferences> = context.dataStore.data
@@ -68,7 +70,8 @@ class UserPreferencesRepository(private val context: Context) {
             currentDoseMg = preferences[PreferencesKeys.CURRENT_DOSE_MG] ?: 2.5,
             reminderEnabled = preferences[PreferencesKeys.REMINDER_ENABLED] ?: true,
             reminderHour = preferences[PreferencesKeys.REMINDER_HOUR] ?: 9,
-            reminderMinute = preferences[PreferencesKeys.REMINDER_MINUTE] ?: 0
+            reminderMinute = preferences[PreferencesKeys.REMINDER_MINUTE] ?: 0,
+            lastNotificationDate = preferences[PreferencesKeys.LAST_NOTIFICATION_DATE] ?: ""
         )
     }
 
@@ -84,7 +87,7 @@ class UserPreferencesRepository(private val context: Context) {
             preferences[PreferencesKeys.INITIAL_WEIGHT] = initialWeight
             preferences[PreferencesKeys.TARGET_WEIGHT] = targetWeight
             preferences[PreferencesKeys.START_DATE_MILLIS] = startDateMillis
-            preferences[PreferencesKeys.APPLICATION_DAY_OF_WEEK] = applicationDayOfWeek
+            preferences[PreferencesKeys.APPLICATION_DAY_OF_WEEK] = applicationDayOfWeek.coerceIn(1, 7)
             preferences[PreferencesKeys.MEDICATION_NAME] = medicationName
             preferences[PreferencesKeys.INITIAL_DOSE_MG] = initialDoseMg
             preferences[PreferencesKeys.CURRENT_DOSE_MG] = initialDoseMg
@@ -95,20 +98,34 @@ class UserPreferencesRepository(private val context: Context) {
     suspend fun updateMedicationSettings(
         medicationName: String,
         currentDoseMg: Double,
-        applicationDayOfWeek: Int
+        applicationDayOfWeek: Int? = null
     ) {
         context.dataStore.edit { preferences ->
             preferences[PreferencesKeys.MEDICATION_NAME] = medicationName
             preferences[PreferencesKeys.CURRENT_DOSE_MG] = currentDoseMg
-            preferences[PreferencesKeys.APPLICATION_DAY_OF_WEEK] = applicationDayOfWeek
+            if (applicationDayOfWeek != null) {
+                preferences[PreferencesKeys.APPLICATION_DAY_OF_WEEK] = applicationDayOfWeek.coerceIn(1, 7)
+            }
+        }
+    }
+
+    suspend fun updateApplicationDayOfWeek(applicationDayOfWeek: Int) {
+        context.dataStore.edit { preferences ->
+            preferences[PreferencesKeys.APPLICATION_DAY_OF_WEEK] = applicationDayOfWeek.coerceIn(1, 7)
+        }
+    }
+
+    suspend fun updateLastNotificationDate(dateStr: String) {
+        context.dataStore.edit { preferences ->
+            preferences[PreferencesKeys.LAST_NOTIFICATION_DATE] = dateStr
         }
     }
 
     suspend fun updateReminderSettings(enabled: Boolean, hour: Int, minute: Int) {
         context.dataStore.edit { preferences ->
             preferences[PreferencesKeys.REMINDER_ENABLED] = enabled
-            preferences[PreferencesKeys.REMINDER_HOUR] = hour
-            preferences[PreferencesKeys.REMINDER_MINUTE] = minute
+            preferences[PreferencesKeys.REMINDER_HOUR] = hour.coerceIn(0, 23)
+            preferences[PreferencesKeys.REMINDER_MINUTE] = minute.coerceIn(0, 59)
         }
     }
 
@@ -125,6 +142,7 @@ class UserPreferencesRepository(private val context: Context) {
             preferences[PreferencesKeys.REMINDER_ENABLED] = prefs.reminderEnabled
             preferences[PreferencesKeys.REMINDER_HOUR] = prefs.reminderHour
             preferences[PreferencesKeys.REMINDER_MINUTE] = prefs.reminderMinute
+            preferences[PreferencesKeys.LAST_NOTIFICATION_DATE] = prefs.lastNotificationDate
         }
     }
 

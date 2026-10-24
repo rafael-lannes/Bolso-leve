@@ -1,16 +1,20 @@
 package com.bolsoleve.app.presentation.screens.onboarding
 
+import android.content.Context
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.bolsoleve.app.core.utils.WeightUtils
 import com.bolsoleve.app.data.local.datastore.UserPreferencesRepository
 import com.bolsoleve.app.domain.model.PastMedicationInput
 import com.bolsoleve.app.domain.usecase.CompleteOnboardingUseCase
+import com.bolsoleve.app.notification.ReminderScheduler
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import java.time.Instant
+import java.time.ZoneId
 
 data class OnboardingUiState(
     val isStartingFromScratch: Boolean = true,
@@ -18,7 +22,8 @@ data class OnboardingUiState(
     val currentWeightText: String = "",
     val targetWeightText: String = "",
     val startDateMillis: Long = System.currentTimeMillis(),
-    val selectedDayOfWeek: Int = 1, // 1 = Segunda
+    val selectedDayOfWeek: Int = Instant.ofEpochMilli(System.currentTimeMillis())
+        .atZone(ZoneId.systemDefault()).dayOfWeek.value,
     val medicationName: String = "Mounjaro",
     val initialDoseMg: Double = 2.5,
     val pastMedications: List<PastMedicationInput> = emptyList(),
@@ -28,6 +33,7 @@ data class OnboardingUiState(
 )
 
 class OnboardingViewModel(
+    private val context: Context,
     private val completeOnboardingUseCase: CompleteOnboardingUseCase,
     private val preferencesRepository: UserPreferencesRepository
 ) : ViewModel() {
@@ -55,11 +61,14 @@ class OnboardingViewModel(
     }
 
     fun onStartDateChanged(millis: Long) {
-        _uiState.update { it.copy(startDateMillis = millis) }
+        val dayOfWeek = Instant.ofEpochMilli(millis)
+            .atZone(ZoneId.systemDefault())
+            .dayOfWeek.value
+        _uiState.update { it.copy(startDateMillis = millis, selectedDayOfWeek = dayOfWeek) }
     }
 
     fun onDayOfWeekChanged(day: Int) {
-        _uiState.update { it.copy(selectedDayOfWeek = day) }
+        _uiState.update { it.copy(selectedDayOfWeek = day.coerceIn(1, 7)) }
     }
 
     fun onMedicationSelected(name: String, defaultDose: Double) {
@@ -139,6 +148,10 @@ class OnboardingViewModel(
                     currentDoseMg = currentState.initialDoseMg,
                     pastMedications = currentState.pastMedications
                 )
+                // Agenda lembrete semanal para o dia configurado
+                ReminderScheduler.scheduleWeeklyReminder(context)
+                ReminderScheduler.checkAndTriggerPendingNotification(context)
+
                 _uiState.update { it.copy(isSaving = false, isCompleted = true) }
                 onSuccess()
             } catch (e: Exception) {

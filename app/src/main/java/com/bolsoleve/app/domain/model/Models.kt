@@ -79,7 +79,9 @@ data class TreatmentSummary(
     val doctorSpecialty: String = "",
     val clinicAddress: String = "",
     val suggestedWeighInDay: String = "",
-    val activeWeeks: Int = 1
+    val activeWeeks: Int = 1,
+    val applicationDayName: String = "",
+    val nextDoseFormattedDate: String = ""
 )
 
 data class WeeklyWeightVariation(

@@ -67,10 +67,10 @@ val useCaseModule = module {
 
 val viewModelModule = module {
     viewModel { DashboardViewModel(get(), get(), get(), get(), get(), get()) }
-    viewModel { MedicineViewModel(get(), get(), get(), get(), get()) }
+    viewModel { MedicineViewModel(androidContext(), get(), get(), get(), get(), get()) }
     viewModel { StatsViewModel(get(), get(), get(), get()) }
-    viewModel { OnboardingViewModel(get(), get()) }
-    viewModel { OptionsViewModel(get(), get(), get(), get(), get(), get()) }
+    viewModel { OnboardingViewModel(androidContext(), get(), get()) }
+    viewModel { OptionsViewModel(androidContext(), get(), get(), get(), get(), get(), get()) }
 }
 
 val appModules = listOf(

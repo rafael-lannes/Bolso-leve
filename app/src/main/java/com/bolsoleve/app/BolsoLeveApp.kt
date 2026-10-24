@@ -53,11 +53,12 @@ class BolsoLeveApp : Application() {
             Log.e("BolsoLeveApp", "Falha ao criar canais de notificação", e)
         }
 
-        // 4. Agendamento periódico de lembretes no WorkManager (protegido contra falhas de inicialização)
+        // 4. Agendamento de lembretes semanais e checagem de pendências
         runCatching {
             ReminderScheduler.scheduleWeeklyReminder(this)
+            ReminderScheduler.checkAndTriggerPendingNotification(this)
         }.onFailure { e ->
-            Log.e("BolsoLeveApp", "Falha ao agendar lembretes no WorkManager", e)
+            Log.e("BolsoLeveApp", "Falha ao agendar lembretes", e)
         }
     }
 }

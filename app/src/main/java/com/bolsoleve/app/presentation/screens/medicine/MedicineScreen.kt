@@ -280,12 +280,24 @@ fun MedicineScreen(
                             }
 
                             // Seletor de dia da semana de aplicação
-                            Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
-                                Text(
-                                    text = "Dia de aplicação semanal configurado:",
-                                    style = MaterialTheme.typography.labelMedium,
-                                    color = MaterialTheme.colorScheme.onSurfaceVariant
-                                )
+                            Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                                Row(
+                                    modifier = Modifier.fillMaxWidth(),
+                                    horizontalArrangement = Arrangement.SpaceBetween,
+                                    verticalAlignment = Alignment.CenterVertically
+                                ) {
+                                    Text(
+                                        text = "Dia de aplicação semanal:",
+                                        style = MaterialTheme.typography.labelMedium,
+                                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                                    )
+                                    Text(
+                                        text = "Toda ${DateTimeUtils.getDayName(uiState.applicationDayOfWeek)}",
+                                        style = MaterialTheme.typography.labelMedium,
+                                        fontWeight = FontWeight.Bold,
+                                        color = MaterialTheme.colorScheme.primary
+                                    )
+                                }
 
                                 Row(
                                     modifier = Modifier.fillMaxWidth(),
@@ -320,6 +332,12 @@ fun MedicineScreen(
                                         }
                                     }
                                 }
+
+                                Text(
+                                    text = "💡 O lembrete semanal de dose será disparado toda ${DateTimeUtils.getDayName(uiState.applicationDayOfWeek)}.",
+                                    style = MaterialTheme.typography.bodySmall,
+                                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                                )
                             }
                         }
                     }

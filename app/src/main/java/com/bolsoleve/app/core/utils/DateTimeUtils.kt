@@ -5,6 +5,7 @@ import java.time.DayOfWeek
 import java.time.Instant
 import java.time.LocalDate
 import java.time.LocalDateTime
+import java.time.LocalTime
 import java.time.ZoneId
 import java.time.format.DateTimeFormatter
 import java.time.temporal.ChronoUnit
@@ -46,22 +47,75 @@ object DateTimeUtils {
     }
 
     /**
-     * Retorna quantos dias faltam até o próximo dia da semana configurado (1 = Segunda, 7 = Domingo)
-     * Se hoje for o dia, retorna 0.
+     * Retorna o nome por extenso do dia da semana (1 = Segunda-feira, 7 = Domingo)
      */
-    fun daysUntilNextDayOfWeek(targetDayOfWeekIndex: Int): Int {
+    fun getDayName(targetDayOfWeekIndex: Int): String {
+        val index = (targetDayOfWeekIndex - 1).coerceIn(0, 6)
+        return dayNames[index]
+    }
+
+    /**
+     * Retorna quantos dias faltam até o próximo dia da semana configurado (1 = Segunda, 7 = Domingo)
+     * Se hoje for o dia e afterTodayIfConfirmed for false, retorna 0.
+     * Se hoje for o dia e afterTodayIfConfirmed for true, retorna 7.
+     */
+    fun daysUntilNextDayOfWeek(targetDayOfWeekIndex: Int, afterTodayIfConfirmed: Boolean = false): Int {
         val today = LocalDate.now()
         val currentDay = today.dayOfWeek.value // 1 (Mon) to 7 (Sun)
-        val diff = (targetDayOfWeekIndex - currentDay + 7) % 7
-        return diff
+        val validTarget = targetDayOfWeekIndex.coerceIn(1, 7)
+        val diff = (validTarget - currentDay + 7) % 7
+        return if (diff == 0 && afterTodayIfConfirmed) 7 else diff
     }
 
     /**
      * Próxima data do dia da semana configurado
      */
-    fun getNextDateForDayOfWeek(targetDayOfWeekIndex: Int): LocalDate {
-        val daysUntil = daysUntilNextDayOfWeek(targetDayOfWeekIndex)
+    fun getNextDateForDayOfWeek(targetDayOfWeekIndex: Int, afterTodayIfConfirmed: Boolean = false): LocalDate {
+        val daysUntil = daysUntilNextDayOfWeek(targetDayOfWeekIndex, afterTodayIfConfirmed)
         return LocalDate.now().plusDays(daysUntil.toLong())
+    }
+
+    /**
+     * Formata LocalDate em dd/MM/yyyy
+     */
+    fun formatLocalDate(date: LocalDate): String {
+        val formatter = DateTimeFormatter.ofPattern("dd/MM/yyyy", ptBrLocale)
+        return date.format(formatter)
+    }
+
+    /**
+     * Formata horário do lembrete HH:mm
+     */
+    fun formatReminderTime(hour: Int, minute: Int): String {
+        return String.format(ptBrLocale, "%02d:%02d", hour.coerceIn(0, 23), minute.coerceIn(0, 59))
+    }
+
+    /**
+     * Calcula o exato timestamp em millis do próximo alarme de lembrete
+     * baseado no dia da semana configurado (1..7) e no horário (hora/minuto).
+     */
+    fun calculateNextReminderTimeMillis(targetDayOfWeek: Int, hour: Int, minute: Int): Long {
+        val now = LocalDateTime.now()
+        val todayDay = now.dayOfWeek.value
+        val validTargetDay = targetDayOfWeek.coerceIn(1, 7)
+        val targetTime = LocalTime.of(hour.coerceIn(0, 23), minute.coerceIn(0, 59))
+
+        val daysUntil = (validTargetDay - todayDay + 7) % 7
+        val scheduledDateTime = if (daysUntil == 0) {
+            // Hoje é o dia configurado
+            if (now.toLocalTime().isBefore(targetTime)) {
+                // Horário ainda está por vir hoje
+                now.toLocalDate().atTime(targetTime)
+            } else {
+                // Horário já passou hoje, agenda para o mesmo dia na próxima semana
+                now.toLocalDate().plusDays(7).atTime(targetTime)
+            }
+        } else {
+            // Dia futuro na semana
+            now.toLocalDate().plusDays(daysUntil.toLong()).atTime(targetTime)
+        }
+
+        return localDateTimeToMillis(scheduledDateTime)
     }
 
     /**

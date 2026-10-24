@@ -56,8 +56,15 @@ class GetDashboardDataUseCase(
                 doseDate == LocalDate.now() && dose.isConfirmed
             } ?: false
 
+            val effectiveDaysUntil = if (isDoseToday && isTodayConfirmed) 7 else daysUntilDose
+            val nextLocalDate = DateTimeUtils.getNextDateForDayOfWeek(
+                targetDayOfWeekIndex = prefs.applicationDayOfWeek,
+                afterTodayIfConfirmed = isDoseToday && isTodayConfirmed
+            )
             val activeWeeks = DateTimeUtils.calculateActiveWeeks(prefs.treatmentStartDateMillis)
             val suggestedWeighInDay = DateTimeUtils.getSuggestedWeighInDay(prefs.applicationDayOfWeek)
+            val applicationDayName = DateTimeUtils.getDayName(prefs.applicationDayOfWeek)
+            val nextDoseFormattedDate = DateTimeUtils.formatLocalDate(nextLocalDate)
 
             val summary = TreatmentSummary(
                 currentWeight = currentWeight,
@@ -65,8 +72,8 @@ class GetDashboardDataUseCase(
                 targetWeight = targetWeight,
                 totalLostKg = totalLostKg,
                 progressPercentage = progressPercentage,
-                daysUntilNextDose = daysUntilDose,
-                nextDoseDate = DateTimeUtils.getNextDateForDayOfWeek(prefs.applicationDayOfWeek).toString(),
+                daysUntilNextDose = effectiveDaysUntil,
+                nextDoseDate = nextLocalDate.toString(),
                 medicationName = prefs.medicationName,
                 currentDoseMg = prefs.currentDoseMg,
                 isDoseToday = isDoseToday,
@@ -76,7 +83,9 @@ class GetDashboardDataUseCase(
                 doctorSpecialty = doctor?.specialty.orEmpty(),
                 clinicAddress = doctor?.clinicAddress.orEmpty(),
                 suggestedWeighInDay = suggestedWeighInDay,
-                activeWeeks = activeWeeks
+                activeWeeks = activeWeeks,
+                applicationDayName = applicationDayName,
+                nextDoseFormattedDate = nextDoseFormattedDate
             )
 
             DashboardData(
@@ -310,16 +319,10 @@ class AddMedicationBoxUseCase(
             }
         }
 
-        // 3. Atualiza preferência de dose atual
+        // 3. Atualiza preferência de dose atual (sem alterar o dia de aplicação da semana já escolhido pelo usuário)
         preferencesRepository.updateMedicationSettings(
             medicationName = input.medicationName,
-            currentDoseMg = input.doseMg,
-            applicationDayOfWeek = run {
-                val cal = java.time.Instant.ofEpochMilli(input.purchaseDateMillis)
-                    .atZone(java.time.ZoneId.systemDefault())
-                    .dayOfWeek.value
-                cal
-            }
+            currentDoseMg = input.doseMg
         )
 
         return expenseId

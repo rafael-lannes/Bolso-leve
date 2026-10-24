@@ -29,7 +29,12 @@ class MainActivity : ComponentActivity() {
                 // Solicitação segura de permissão para notificações no Android 13+
                 val permissionLauncher = rememberLauncherForActivityResult(
                     contract = ActivityResultContracts.RequestPermission(),
-                    onResult = { _ -> }
+                    onResult = { isGranted ->
+                        if (isGranted) {
+                            com.bolsoleve.app.notification.ReminderScheduler.scheduleWeeklyReminder(this@MainActivity)
+                            com.bolsoleve.app.notification.ReminderScheduler.checkAndTriggerPendingNotification(this@MainActivity)
+                        }
+                    }
                 )
 
                 LaunchedEffect(Unit) {
